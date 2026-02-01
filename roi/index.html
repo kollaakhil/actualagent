@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROI Calculator — Actual Agent</title>
+    <meta name="description" content="Calculate how much revenue you're losing to missed calls — and how much Actual Agent can recover.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --border: rgba(255, 255, 255, 0.06);
+            --text-primary: #f0f0f5;
+            --text-secondary: #8888a0;
+            --text-muted: #55556a;
+            --accent-blue: #4f6ef7;
+            --accent-purple: #9333ea;
+            --accent-cyan: #22d3ee;
+            --accent-green: #22c55e;
+            --gradient-main: linear-gradient(135deg, #4f6ef7 0%, #9333ea 50%, #c026d3 100%);
+            --gradient-subtle: linear-gradient(135deg, rgba(79,110,247,0.15) 0%, rgba(147,51,234,0.15) 100%);
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --radius: 16px;
+            --radius-sm: 10px;
+        }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary); color: var(--text-primary);
+            line-height: 1.6; overflow-x: hidden; -webkit-font-smoothing: antialiased;
+        }
+        .ambient-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: hidden; }
+        .ambient-bg .orb { position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.1; }
+        .ambient-bg .orb-1 { width: 600px; height: 600px; top: -200px; right: -100px; background: var(--accent-purple); animation: float 20s ease-in-out infinite; }
+        .ambient-bg .orb-2 { width: 500px; height: 500px; bottom: 20%; left: -150px; background: var(--accent-blue); animation: float 25s ease-in-out infinite reverse; }
+        @keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(30px, -30px) scale(1.05); } 66% { transform: translate(-20px, 20px) scale(0.95); } }
+
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+        .gradient-text { background: var(--gradient-main); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .btn {
+            display: inline-flex; align-items: center; gap: 8px; padding: 14px 32px; border-radius: 50px;
+            font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.3s ease;
+            border: none; text-decoration: none; font-family: inherit;
+        }
+        .btn-primary { background: var(--gradient-main); color: #fff; box-shadow: 0 4px 24px rgba(79,110,247,0.3); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(79,110,247,0.45); }
+
+        /* Nav */
+        nav {
+            position: sticky; top: 0; z-index: 100; padding: 16px 0;
+            background: rgba(10, 10, 15, 0.85); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+        nav .container { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.3rem; font-weight: 800; text-decoration: none; display: flex; align-items: center; gap: 10px; }
+        .logo-icon { width: 34px; height: 34px; border-radius: 10px; background: var(--gradient-main); display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+        .logo span { color: var(--text-primary); }
+        .back-link { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; font-weight: 500; transition: color 0.2s; }
+        .back-link:hover { color: var(--text-secondary); }
+
+        /* Hero */
+        .hero { text-align: center; padding: 72px 0 48px; position: relative; z-index: 1; }
+        .hero h1 { font-size: clamp(2rem, 4vw, 2.8rem); font-weight: 900; margin-bottom: 16px; }
+        .hero p { font-size: 1.1rem; color: var(--text-secondary); max-width: 600px; margin: 0 auto; }
+
+        /* Calculator */
+        .calc-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 32px;
+            position: relative; z-index: 1; margin-bottom: 64px;
+        }
+        .calc-inputs, .calc-results {
+            background: var(--glass); border: 1px solid var(--glass-border);
+            border-radius: var(--radius); padding: 36px;
+        }
+        .calc-inputs h2, .calc-results h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: 28px; }
+        .input-group { margin-bottom: 24px; }
+        .input-group label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+        .input-group select, .input-group input[type="number"] {
+            width: 100%; padding: 12px 16px; border-radius: var(--radius-sm);
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
+            color: var(--text-primary); font-family: inherit; font-size: 0.95rem; outline: none;
+            transition: border-color 0.3s;
+        }
+        .input-group select option { background: #1a1a2e; }
+        .input-group select:focus, .input-group input:focus { border-color: rgba(79,110,247,0.4); }
+
+        /* Slider */
+        .slider-wrap { position: relative; }
+        .slider-value {
+            position: absolute; right: 0; top: -2px; font-size: 1.3rem; font-weight: 800;
+            background: var(--gradient-main); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        input[type="range"] {
+            -webkit-appearance: none; width: 100%; height: 6px; border-radius: 3px;
+            background: rgba(255,255,255,0.08); outline: none; margin-top: 12px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%;
+            background: var(--gradient-main); cursor: pointer;
+            box-shadow: 0 2px 12px rgba(79,110,247,0.4);
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 22px; height: 22px; border-radius: 50%; border: none;
+            background: var(--gradient-main); cursor: pointer;
+        }
+
+        /* Results */
+        .result-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; }
+        .result-card {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);
+            border-radius: var(--radius-sm); padding: 20px; text-align: center;
+        }
+        .result-card .label { font-size: 0.78rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+        .result-card .value { font-size: 1.6rem; font-weight: 800; }
+        .result-card .value.green { color: var(--accent-green); }
+        .result-card .value.blue { color: var(--accent-blue); }
+        .result-card .value.purple { color: var(--accent-purple); }
+        .result-card .value.cyan { color: var(--accent-cyan); }
+
+        /* Comparison */
+        .comparison { margin-top: 28px; }
+        .comparison h3 { font-size: 1rem; font-weight: 700; margin-bottom: 16px; text-align: center; }
+        .comp-bars { display: flex; flex-direction: column; gap: 16px; }
+        .comp-row { display: flex; align-items: center; gap: 16px; }
+        .comp-label { width: 120px; font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); text-align: right; flex-shrink: 0; }
+        .comp-bar-track { flex: 1; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.04); position: relative; overflow: hidden; }
+        .comp-bar-fill { height: 100%; border-radius: 8px; transition: width 0.8s ease; display: flex; align-items: center; padding: 0 12px; font-size: 0.8rem; font-weight: 700; }
+        .comp-bar-fill.without { background: rgba(244,63,94,0.2); color: #f43f5e; }
+        .comp-bar-fill.with { background: linear-gradient(90deg, rgba(79,110,247,0.3), rgba(34,197,94,0.3)); color: var(--accent-green); }
+
+        /* CTA */
+        .cta-area { text-align: center; padding: 64px 0 80px; position: relative; z-index: 1; }
+        .cta-area h2 { font-size: 1.8rem; font-weight: 800; margin-bottom: 16px; }
+        .cta-area p { color: var(--text-secondary); margin-bottom: 32px; max-width: 500px; margin-left: auto; margin-right: auto; }
+
+        @media (max-width: 768px) {
+            .calc-grid { grid-template-columns: 1fr; }
+            .result-cards { grid-template-columns: 1fr; }
+            .comp-label { width: 80px; font-size: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="ambient-bg">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+</div>
+
+<nav>
+    <div class="container">
+        <a href="../" class="logo">
+            <div class="logo-icon">⚡</div>
+            <span>Actual Agent</span>
+        </a>
+        <a href="../" class="back-link">← Back to Home</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="hero">
+        <h1>Calculate Your <span class="gradient-text">ROI</span></h1>
+        <p>See exactly how much revenue you're leaving on the table — and what happens when Actual Agent picks up every call.</p>
+    </div>
+
+    <div class="calc-grid">
+        <div class="calc-inputs">
+            <h2>📊 Your Business Details</h2>
+
+            <div class="input-group">
+                <label>Industry</label>
+                <select id="industry">
+                    <option value="dental">Dental Office</option>
+                    <option value="realestate">Real Estate</option>
+                    <option value="insurance">Insurance Agency</option>
+                    <option value="law">Law Firm</option>
+                    <option value="healthcare">Healthcare / Medical</option>
+                    <option value="hvac">HVAC / Home Services</option>
+                    <option value="auto">Auto Repair / Dealership</option>
+                    <option value="consulting">Consulting / Professional Services</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>Monthly Missed Calls</label>
+                <div class="slider-wrap">
+                    <span class="slider-value" id="missedDisplay">15</span>
+                    <input type="range" id="missedCalls" min="1" max="50" value="15">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Average Customer Value ($)</label>
+                <input type="number" id="avgValue" value="500" min="50" step="50">
+            </div>
+
+            <div class="input-group">
+                <label>Current Receptionist Cost ($/month)</label>
+                <input type="number" id="receptionistCost" value="3500" min="0" step="100">
+            </div>
+
+            <div class="input-group">
+                <label>Conversion Rate of Answered Calls (%)</label>
+                <input type="number" id="convRate" value="35" min="5" max="80" step="5">
+            </div>
+        </div>
+
+        <div class="calc-results">
+            <h2>💰 Your Potential ROI</h2>
+
+            <div class="result-cards">
+                <div class="result-card">
+                    <div class="label">Monthly Recovered Revenue</div>
+                    <div class="value green" id="monthlyRevenue">$2,625</div>
+                </div>
+                <div class="result-card">
+                    <div class="label">Annual Savings</div>
+                    <div class="value blue" id="annualSavings">$31,500</div>
+                </div>
+                <div class="result-card">
+                    <div class="label">ROI Percentage</div>
+                    <div class="value purple" id="roiPercent">528%</div>
+                </div>
+                <div class="result-card">
+                    <div class="label">Payback Period</div>
+                    <div class="value cyan" id="payback">5 days</div>
+                </div>
+            </div>
+
+            <div class="comparison">
+                <h3>Monthly Revenue Comparison</h3>
+                <div class="comp-bars">
+                    <div class="comp-row">
+                        <div class="comp-label">Without Actual Agent</div>
+                        <div class="comp-bar-track">
+                            <div class="comp-bar-fill without" id="barWithout" style="width:30%">$0 recovered</div>
+                        </div>
+                    </div>
+                    <div class="comp-row">
+                        <div class="comp-label">With Actual Agent</div>
+                        <div class="comp-bar-track">
+                            <div class="comp-bar-fill with" id="barWith" style="width:85%">$2,625/mo</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="cta-area">
+    <div class="container">
+        <h2>Start Saving <span class="gradient-text">Today</span></h2>
+        <p>Your AI receptionist pays for itself in the first week. Stop leaving money on the table.</p>
+        <a href="../#contact" class="btn btn-primary">Get Started → Book Free Call</a>
+    </div>
+</div>
+
+<script>
+const industryDefaults = {
+    dental: { value: 500, receptionist: 3500, rate: 35 },
+    realestate: { value: 3000, receptionist: 4000, rate: 25 },
+    insurance: { value: 1200, receptionist: 3200, rate: 30 },
+    law: { value: 2500, receptionist: 4500, rate: 28 },
+    healthcare: { value: 800, receptionist: 3800, rate: 40 },
+    hvac: { value: 600, receptionist: 3000, rate: 45 },
+    auto: { value: 700, receptionist: 3200, rate: 38 },
+    consulting: { value: 2000, receptionist: 4000, rate: 30 },
+    other: { value: 500, receptionist: 3500, rate: 35 },
+};
+
+const PLAN_COST = 497; // Starter plan
+
+const $industry = document.getElementById('industry');
+const $missed = document.getElementById('missedCalls');
+const $missedDisplay = document.getElementById('missedDisplay');
+const $avgValue = document.getElementById('avgValue');
+const $receptionist = document.getElementById('receptionistCost');
+const $convRate = document.getElementById('convRate');
+
+function fmt(n) {
+    return '$' + Math.round(n).toLocaleString();
+}
+
+function calculate() {
+    const missed = parseInt($missed.value);
+    const avgVal = parseFloat($avgValue.value) || 0;
+    const recCost = parseFloat($receptionist.value) || 0;
+    const convRate = (parseFloat($convRate.value) || 35) / 100;
+
+    $missedDisplay.textContent = missed;
+
+    // AI recovers ~94% of missed calls, then conversion rate applies
+    const recoveredCalls = missed * 0.94;
+    const monthlyRevenue = recoveredCalls * convRate * avgVal;
+    const receptionistSavings = Math.max(0, recCost - PLAN_COST);
+    const totalMonthlyBenefit = monthlyRevenue + receptionistSavings;
+    const annualSavings = totalMonthlyBenefit * 12;
+    const roiPct = PLAN_COST > 0 ? ((totalMonthlyBenefit - PLAN_COST) / PLAN_COST) * 100 : 0;
+
+    let paybackDays = PLAN_COST > 0 ? Math.ceil((PLAN_COST / totalMonthlyBenefit) * 30) : 0;
+    let paybackText = paybackDays <= 1 ? '< 1 day' : paybackDays + ' days';
+    if (paybackDays > 30) paybackText = Math.ceil(paybackDays / 30) + ' months';
+
+    document.getElementById('monthlyRevenue').textContent = fmt(monthlyRevenue);
+    document.getElementById('annualSavings').textContent = fmt(annualSavings);
+    document.getElementById('roiPercent').textContent = Math.round(roiPct) + '%';
+    document.getElementById('payback').textContent = paybackText;
+
+    // Bars
+    const maxRev = Math.max(monthlyRevenue, 1);
+    document.getElementById('barWithout').style.width = '8%';
+    document.getElementById('barWithout').textContent = '$0 recovered';
+    document.getElementById('barWith').style.width = Math.min(95, Math.max(20, (monthlyRevenue / (maxRev * 1.1)) * 95)) + '%';
+    document.getElementById('barWith').textContent = fmt(monthlyRevenue) + '/mo';
+}
+
+$industry.addEventListener('change', () => {
+    const d = industryDefaults[$industry.value];
+    $avgValue.value = d.value;
+    $receptionist.value = d.receptionist;
+    $convRate.value = d.rate;
+    calculate();
+});
+
+[$missed, $avgValue, $receptionist, $convRate].forEach(el => {
+    el.addEventListener('input', calculate);
+});
+
+calculate();
+</script>
+
+</body>
+</html>

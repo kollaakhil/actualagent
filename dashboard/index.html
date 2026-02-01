@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actual Agent Dashboard — Client Analytics</title>
+    <meta name="description" content="See your AI receptionist's performance — conversations, appointments, leads, and more.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.06);
+            --text-primary: #f0f0f5;
+            --text-secondary: #8888a0;
+            --text-muted: #55556a;
+            --accent-blue: #4f6ef7;
+            --accent-purple: #9333ea;
+            --accent-cyan: #22d3ee;
+            --accent-green: #22c55e;
+            --accent-amber: #f59e0b;
+            --accent-rose: #f43f5e;
+            --gradient-main: linear-gradient(135deg, #4f6ef7 0%, #9333ea 50%, #c026d3 100%);
+            --gradient-subtle: linear-gradient(135deg, rgba(79,110,247,0.15) 0%, rgba(147,51,234,0.15) 100%);
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --radius: 16px;
+            --radius-sm: 10px;
+        }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+        .ambient-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0; overflow: hidden;
+        }
+        .ambient-bg .orb { position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.08; }
+        .ambient-bg .orb-1 { width: 600px; height: 600px; top: -200px; right: -100px; background: var(--accent-purple); animation: float 20s ease-in-out infinite; }
+        .ambient-bg .orb-2 { width: 500px; height: 500px; bottom: 20%; left: -150px; background: var(--accent-blue); animation: float 25s ease-in-out infinite reverse; }
+        @keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(30px, -30px) scale(1.05); } 66% { transform: translate(-20px, 20px) scale(0.95); } }
+
+        .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+        .gradient-text { background: var(--gradient-main); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+        /* Top Bar */
+        .topbar {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(10, 10, 15, 0.85); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border); padding: 16px 0;
+        }
+        .topbar-inner { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.3rem; font-weight: 800; text-decoration: none; display: flex; align-items: center; gap: 10px; }
+        .logo-icon { width: 34px; height: 34px; border-radius: 10px; background: var(--gradient-main); display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+        .logo span { color: var(--text-primary); }
+        .topbar-right { display: flex; align-items: center; gap: 16px; }
+        .topbar-right .period-selector {
+            padding: 8px 16px; border-radius: 8px; background: var(--glass); border: 1px solid var(--glass-border);
+            color: var(--text-secondary); font-family: inherit; font-size: 0.85rem; cursor: pointer; outline: none;
+        }
+        .topbar-right .period-selector option { background: #1a1a2e; }
+        .avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--gradient-main); display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; }
+
+        /* Dashboard Header */
+        .dash-header { padding: 40px 0 32px; }
+        .dash-header h1 { font-size: 1.8rem; font-weight: 800; margin-bottom: 4px; }
+        .dash-header p { font-size: 0.95rem; color: var(--text-secondary); }
+
+        /* Stat Cards */
+        .stat-grid {
+            display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; margin-bottom: 32px;
+        }
+        .stat-card {
+            background: var(--glass); border: 1px solid var(--glass-border);
+            border-radius: var(--radius); padding: 24px 20px;
+            position: relative; overflow: hidden; transition: all 0.3s ease;
+        }
+        .stat-card:hover { border-color: rgba(255,255,255,0.12); transform: translateY(-2px); }
+        .stat-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+        }
+        .stat-card:nth-child(1)::before { background: var(--accent-blue); }
+        .stat-card:nth-child(2)::before { background: var(--accent-green); }
+        .stat-card:nth-child(3)::before { background: var(--accent-purple); }
+        .stat-card:nth-child(4)::before { background: var(--accent-cyan); }
+        .stat-card:nth-child(5)::before { background: var(--accent-amber); }
+        .stat-card:nth-child(6)::before { background: var(--accent-rose); }
+        .stat-label { font-size: 0.78rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+        .stat-value { font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; }
+        .stat-change { display: inline-flex; align-items: center; gap: 4px; font-size: 0.75rem; font-weight: 600; margin-top: 8px; padding: 3px 8px; border-radius: 50px; }
+        .stat-change.up { background: rgba(34,197,94,0.1); color: #22c55e; }
+        .stat-change.down { background: rgba(244,63,94,0.1); color: #f43f5e; }
+
+        /* Chart Section */
+        .chart-section {
+            background: var(--glass); border: 1px solid var(--glass-border);
+            border-radius: var(--radius); padding: 28px; margin-bottom: 32px;
+        }
+        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .chart-header h2 { font-size: 1.1rem; font-weight: 700; }
+        .chart-tabs { display: flex; gap: 4px; }
+        .chart-tab {
+            padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 600;
+            cursor: pointer; border: none; font-family: inherit; transition: all 0.2s;
+            background: transparent; color: var(--text-muted);
+        }
+        .chart-tab.active { background: var(--gradient-subtle); color: var(--accent-blue); }
+        .chart-tab:hover { color: var(--text-secondary); }
+        .chart-container { position: relative; width: 100%; height: 280px; }
+        #conversationsChart { width: 100%; height: 100%; }
+
+        /* Bottom Grid */
+        .bottom-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 24px; margin-bottom: 60px; }
+
+        /* Recent Conversations */
+        .recent-section {
+            background: var(--glass); border: 1px solid var(--glass-border);
+            border-radius: var(--radius); padding: 28px;
+        }
+        .recent-section h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 20px; }
+        .conversation-list { display: flex; flex-direction: column; gap: 8px; }
+        .conv-item {
+            display: flex; align-items: center; gap: 14px; padding: 14px 16px;
+            border-radius: var(--radius-sm); background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.03); transition: all 0.2s;
+        }
+        .conv-item:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.06); }
+        .conv-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; flex-shrink: 0; }
+        .conv-info { flex: 1; min-width: 0; }
+        .conv-name { font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .conv-preview { font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .conv-meta { text-align: right; flex-shrink: 0; }
+        .conv-time { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; }
+        .conv-status {
+            font-size: 0.7rem; font-weight: 700; padding: 3px 10px; border-radius: 50px;
+            text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap;
+        }
+        .conv-status.completed { background: rgba(34,197,94,0.1); color: #22c55e; }
+        .conv-status.appointment { background: rgba(79,110,247,0.1); color: var(--accent-blue); }
+        .conv-status.lead { background: rgba(147,51,234,0.1); color: var(--accent-purple); }
+        .conv-status.escalated { background: rgba(245,158,11,0.1); color: var(--accent-amber); }
+
+        /* FAQ Section */
+        .faq-section {
+            background: var(--glass); border: 1px solid var(--glass-border);
+            border-radius: var(--radius); padding: 28px;
+        }
+        .faq-section h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 20px; }
+        .faq-list { display: flex; flex-direction: column; gap: 10px; }
+        .faq-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 16px; border-radius: var(--radius-sm);
+            background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.03);
+        }
+        .faq-question { font-size: 0.88rem; font-weight: 500; flex: 1; }
+        .faq-count {
+            font-size: 0.8rem; font-weight: 700; color: var(--accent-blue);
+            background: rgba(79,110,247,0.1); padding: 4px 12px; border-radius: 50px; flex-shrink: 0; margin-left: 12px;
+        }
+        .faq-bar { width: 100%; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.04); margin-top: 8px; overflow: hidden; }
+        .faq-bar-fill { height: 100%; border-radius: 2px; background: var(--gradient-main); transition: width 1s ease; }
+
+        /* Back link */
+        .back-link {
+            display: inline-flex; align-items: center; gap: 6px;
+            color: var(--text-muted); text-decoration: none; font-size: 0.85rem; font-weight: 500;
+            transition: color 0.2s;
+        }
+        .back-link:hover { color: var(--text-secondary); }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .stat-grid { grid-template-columns: repeat(3, 1fr); }
+            .bottom-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            .stat-grid { grid-template-columns: repeat(2, 1fr); }
+            .dash-header h1 { font-size: 1.4rem; }
+            .stat-value { font-size: 1.5rem; }
+        }
+        @media (max-width: 480px) {
+            .stat-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="ambient-bg">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+</div>
+
+<!-- Top Bar -->
+<div class="topbar">
+    <div class="container">
+        <div class="topbar-inner">
+            <a href="../" class="logo">
+                <div class="logo-icon">⚡</div>
+                <span>Actual Agent</span>
+            </a>
+            <div class="topbar-right">
+                <select class="period-selector" id="periodSelect">
+                    <option value="30">Last 30 Days</option>
+                    <option value="7">Last 7 Days</option>
+                    <option value="90">Last 90 Days</option>
+                </select>
+                <div class="avatar">SK</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container" style="position: relative; z-index: 1;">
+
+    <!-- Dashboard Header -->
+    <div class="dash-header">
+        <a href="../" class="back-link">← Back to Home</a>
+        <h1 style="margin-top: 12px;">Dashboard — <span class="gradient-text">Smile Dental Care</span></h1>
+        <p>Your AI receptionist performance overview • Updated 5 minutes ago</p>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="stat-grid">
+        <div class="stat-card">
+            <div class="stat-label">Total Conversations</div>
+            <div class="stat-value">247</div>
+            <div class="stat-change up">↑ 18% vs last month</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Appointments Booked</div>
+            <div class="stat-value">89</div>
+            <div class="stat-change up">↑ 24% vs last month</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Leads Captured</div>
+            <div class="stat-value">156</div>
+            <div class="stat-change up">↑ 12% vs last month</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Missed Call Recovery</div>
+            <div class="stat-value">94%</div>
+            <div class="stat-change up">↑ 6% vs last month</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Avg Response Time</div>
+            <div class="stat-value">1.2s</div>
+            <div class="stat-change up">↑ 0.3s faster</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Customer Satisfaction</div>
+            <div class="stat-value">4.8<span style="font-size: 1rem; color: var(--text-muted); font-weight: 500;">/5</span></div>
+            <div class="stat-change up">↑ 0.2 vs last month</div>
+        </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-section">
+        <div class="chart-header">
+            <h2>Conversations Over Time</h2>
+            <div class="chart-tabs">
+                <button class="chart-tab active" data-type="conversations">Conversations</button>
+                <button class="chart-tab" data-type="appointments">Appointments</button>
+                <button class="chart-tab" data-type="leads">Leads</button>
+            </div>
+        </div>
+        <div class="chart-container">
+            <canvas id="conversationsChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Bottom Grid -->
+    <div class="bottom-grid">
+        <!-- Recent Conversations -->
+        <div class="recent-section">
+            <h2>Recent Conversations</h2>
+            <div class="conversation-list" id="convList"></div>
+        </div>
+
+        <!-- Top FAQs -->
+        <div class="faq-section">
+            <h2>Top Questions Asked</h2>
+            <div class="faq-list" id="faqList"></div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// ─── Mock Data ───
+const conversations = [
+    { name: 'Sarah Mitchell', preview: 'Booked a teeth cleaning for next Thursday at 2pm', time: '12 min ago', status: 'appointment', avatar: '👩', avatarBg: 'rgba(79,110,247,0.15)' },
+    { name: 'James Rodriguez', preview: 'Asked about dental implant pricing — captured contact info', time: '34 min ago', status: 'lead', avatar: '👨', avatarBg: 'rgba(147,51,234,0.15)' },
+    { name: 'Emily Chen', preview: 'Rescheduled from Monday to Wednesday, confirmed via text', time: '1 hr ago', status: 'completed', avatar: '👩‍💼', avatarBg: 'rgba(34,197,94,0.15)' },
+    { name: 'Michael Brown', preview: 'Emergency toothache — connected to Dr. Patel on-call', time: '2 hrs ago', status: 'escalated', avatar: '🧑', avatarBg: 'rgba(245,158,11,0.15)' },
+    { name: 'Lisa Park', preview: 'New patient intake completed, booked initial consultation', time: '3 hrs ago', status: 'appointment', avatar: '👩‍🦰', avatarBg: 'rgba(79,110,247,0.15)' },
+    { name: 'David Kim', preview: 'Insurance verification question — provided Aetna details', time: '4 hrs ago', status: 'completed', avatar: '👨‍💻', avatarBg: 'rgba(34,197,94,0.15)' },
+];
+
+const faqs = [
+    { q: 'What insurance do you accept?', count: 47, pct: 100 },
+    { q: 'What are your hours?', count: 38, pct: 81 },
+    { q: 'How much does a cleaning cost?', count: 31, pct: 66 },
+    { q: 'Do you offer emergency services?', count: 24, pct: 51 },
+    { q: 'Can I book an appointment online?', count: 19, pct: 40 },
+    { q: 'Do you accept new patients?', count: 16, pct: 34 },
+    { q: 'What whitening options are available?', count: 12, pct: 26 },
+];
+
+const statusLabels = {
+    completed: 'Completed',
+    appointment: 'Appt Booked',
+    lead: 'Lead Captured',
+    escalated: 'Escalated',
+};
+
+// ─── Render Conversations ───
+const convList = document.getElementById('convList');
+conversations.forEach(c => {
+    convList.innerHTML += `
+        <div class="conv-item">
+            <div class="conv-avatar" style="background:${c.avatarBg}">${c.avatar}</div>
+            <div class="conv-info">
+                <div class="conv-name">${c.name}</div>
+                <div class="conv-preview">${c.preview}</div>
+            </div>
+            <div class="conv-meta">
+                <div class="conv-time">${c.time}</div>
+                <div class="conv-status ${c.status}">${statusLabels[c.status]}</div>
+            </div>
+        </div>`;
+});
+
+// ─── Render FAQs ───
+const faqList = document.getElementById('faqList');
+faqs.forEach(f => {
+    faqList.innerHTML += `
+        <div class="faq-row">
+            <div style="flex:1;">
+                <div class="faq-question">${f.q}</div>
+                <div class="faq-bar"><div class="faq-bar-fill" style="width:${f.pct}%"></div></div>
+            </div>
+            <div class="faq-count">${f.count}×</div>
+        </div>`;
+});
+
+// ─── Chart Drawing ───
+const datasets = {
+    conversations: [5,8,6,9,7,11,8,10,12,9,7,8,6,10,11,14,9,8,7,10,12,9,11,8,10,13,9,7,8,11],
+    appointments: [2,3,2,4,3,5,3,4,5,3,2,3,2,4,4,6,3,3,2,4,5,3,4,3,4,5,3,2,3,4],
+    leads: [3,5,4,5,4,6,5,6,7,6,5,5,4,6,7,8,6,5,5,6,7,6,7,5,6,8,6,5,5,7],
+};
+
+const chartColors = {
+    conversations: { line: '#4f6ef7', fill: 'rgba(79,110,247,0.1)' },
+    appointments: { line: '#22c55e', fill: 'rgba(34,197,94,0.1)' },
+    leads: { line: '#9333ea', fill: 'rgba(147,51,234,0.1)' },
+};
+
+let currentDataset = 'conversations';
+
+function drawChart(type) {
+    const canvas = document.getElementById('conversationsChart');
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+
+    const w = rect.width;
+    const h = rect.height;
+    const data = datasets[type];
+    const color = chartColors[type];
+    const max = Math.max(...data) * 1.2;
+    const padLeft = 44;
+    const padRight = 16;
+    const padTop = 16;
+    const padBottom = 36;
+    const plotW = w - padLeft - padRight;
+    const plotH = h - padTop - padBottom;
+
+    ctx.clearRect(0, 0, w, h);
+
+    // Grid lines
+    const gridLines = 5;
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = 1;
+    ctx.font = '11px Inter, sans-serif';
+    ctx.fillStyle = '#55556a';
+    ctx.textAlign = 'right';
+    for (let i = 0; i <= gridLines; i++) {
+        const y = padTop + (plotH / gridLines) * i;
+        const val = Math.round(max - (max / gridLines) * i);
+        ctx.beginPath();
+        ctx.moveTo(padLeft, y);
+        ctx.lineTo(w - padRight, y);
+        ctx.stroke();
+        ctx.fillText(val, padLeft - 8, y + 4);
+    }
+
+    // X labels
+    ctx.textAlign = 'center';
+    const labelEvery = Math.ceil(data.length / 10);
+    for (let i = 0; i < data.length; i++) {
+        if (i % labelEvery === 0 || i === data.length - 1) {
+            const x = padLeft + (plotW / (data.length - 1)) * i;
+            ctx.fillText(`Jan ${i + 1}`, x, h - 8);
+        }
+    }
+
+    // Points
+    const points = data.map((v, i) => ({
+        x: padLeft + (plotW / (data.length - 1)) * i,
+        y: padTop + plotH - (v / max) * plotH,
+    }));
+
+    // Fill
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, h - padBottom);
+    points.forEach(p => ctx.lineTo(p.x, p.y));
+    ctx.lineTo(points[points.length - 1].x, h - padBottom);
+    ctx.closePath();
+    const grad = ctx.createLinearGradient(0, padTop, 0, h - padBottom);
+    grad.addColorStop(0, color.fill);
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Line
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    for (let i = 1; i < points.length; i++) {
+        const xc = (points[i - 1].x + points[i].x) / 2;
+        const yc = (points[i - 1].y + points[i].y) / 2;
+        ctx.quadraticCurveTo(points[i - 1].x, points[i - 1].y, xc, yc);
+    }
+    ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
+    ctx.strokeStyle = color.line;
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    // Dots on hover points
+    const dotIndices = [0, Math.floor(data.length / 3), Math.floor(2 * data.length / 3), data.length - 1];
+    dotIndices.forEach(i => {
+        ctx.beginPath();
+        ctx.arc(points[i].x, points[i].y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = color.line;
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(points[i].x, points[i].y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = '#0a0a0f';
+        ctx.fill();
+    });
+}
+
+// Tab switching
+document.querySelectorAll('.chart-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentDataset = tab.dataset.type;
+        drawChart(currentDataset);
+    });
+});
+
+drawChart(currentDataset);
+window.addEventListener('resize', () => drawChart(currentDataset));
+</script>
+
+</body>
+</html>

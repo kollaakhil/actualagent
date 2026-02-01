@@ -508,6 +508,9 @@
             .pricing-card.featured { transform: scale(1); }
             .pricing-card:last-child { grid-column: 1 / -1; max-width: 400px; margin: 0 auto; }
         }
+        @media (max-width: 1024px) {
+            .explore-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
         @media (max-width: 768px) {
             .nav-links { display: none; }
             .nav-cta .btn-secondary { display: none; }
@@ -551,7 +554,10 @@
     <a href="#services" onclick="closeMobile()">Services</a>
     <a href="#how-it-works" onclick="closeMobile()">How It Works</a>
     <a href="#pricing" onclick="closeMobile()">Pricing</a>
-    <a href="#faq" onclick="closeMobile()">FAQ</a>
+    <a href="demo/" onclick="closeMobile()">Demo</a>
+    <a href="dashboard/" onclick="closeMobile()">Dashboard</a>
+    <a href="roi/" onclick="closeMobile()">ROI Calculator</a>
+    <a href="compare/" onclick="closeMobile()">Compare</a>
     <a href="#contact" onclick="closeMobile()">Contact</a>
 </div>
 
@@ -566,7 +572,9 @@
             <li><a href="#services">Services</a></li>
             <li><a href="#how-it-works">How It Works</a></li>
             <li><a href="#pricing">Pricing</a></li>
-            <li><a href="#faq">FAQ</a></li>
+            <li><a href="demo/">Demo</a></li>
+            <li><a href="roi/">ROI Calculator</a></li>
+            <li><a href="compare/">Compare</a></li>
         </ul>
         <div class="nav-cta">
             <a href="#contact" class="btn btn-secondary" style="padding: 10px 24px; font-size: 0.85rem;">Book a Call</a>
@@ -696,6 +704,34 @@
                 <h3>Performance Reports</h3>
                 <p>Weekly reports on calls answered, appointments booked, leads captured, and revenue recovered. See exactly what your AI employee is doing for your bottom line.</p>
             </div>
+        </div>
+    </div>
+</section>
+
+<!-- Explore Section -->
+<section style="position: relative; z-index: 1; padding: 0 0 80px;">
+    <div class="container">
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+            <a href="demo/" style="text-decoration:none; background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 28px 24px; transition: all 0.3s ease; display: block;" onmouseover="this.style.transform='translateY(-4px)';this.style.borderColor='rgba(255,255,255,0.12)'" onmouseout="this.style.transform='';this.style.borderColor=''">
+                <div style="font-size: 1.8rem; margin-bottom: 12px;">🎙️</div>
+                <div style="font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">Live Demo</div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary);">Talk to an AI receptionist right now →</div>
+            </a>
+            <a href="dashboard/" style="text-decoration:none; background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 28px 24px; transition: all 0.3s ease; display: block;" onmouseover="this.style.transform='translateY(-4px)';this.style.borderColor='rgba(255,255,255,0.12)'" onmouseout="this.style.transform='';this.style.borderColor=''">
+                <div style="font-size: 1.8rem; margin-bottom: 12px;">📊</div>
+                <div style="font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">Dashboard Preview</div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary);">See your AI employee's analytics →</div>
+            </a>
+            <a href="roi/" style="text-decoration:none; background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 28px 24px; transition: all 0.3s ease; display: block;" onmouseover="this.style.transform='translateY(-4px)';this.style.borderColor='rgba(255,255,255,0.12)'" onmouseout="this.style.transform='';this.style.borderColor=''">
+                <div style="font-size: 1.8rem; margin-bottom: 12px;">💰</div>
+                <div style="font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">ROI Calculator</div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary);">Calculate your savings →</div>
+            </a>
+            <a href="compare/" style="text-decoration:none; background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 28px 24px; transition: all 0.3s ease; display: block;" onmouseover="this.style.transform='translateY(-4px)';this.style.borderColor='rgba(255,255,255,0.12)'" onmouseout="this.style.transform='';this.style.borderColor=''">
+                <div style="font-size: 1.8rem; margin-bottom: 12px;">⚡</div>
+                <div style="font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">Why Us?</div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary);">See the comparison →</div>
+            </a>
         </div>
     </div>
 </section>

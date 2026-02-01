@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onboarding — Set Up Your AI Employee | Actual Agent</title>
+    <meta name="description" content="Tell us about your business and we'll configure your perfect AI receptionist in 48 hours.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #0a0a0f; --bg-secondary: #12121a;
+            --border: rgba(255,255,255,0.06); --text-primary: #f0f0f5;
+            --text-secondary: #8888a0; --text-muted: #55556a;
+            --accent-blue: #4f6ef7; --accent-purple: #9333ea;
+            --accent-green: #22c55e; --accent-rose: #f43f5e;
+            --gradient-main: linear-gradient(135deg, #4f6ef7 0%, #9333ea 50%, #c026d3 100%);
+            --gradient-subtle: linear-gradient(135deg, rgba(79,110,247,0.15) 0%, rgba(147,51,234,0.15) 100%);
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.08);
+            --radius: 16px; --radius-sm: 10px;
+        }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary); color: var(--text-primary);
+            line-height: 1.6; overflow-x: hidden; -webkit-font-smoothing: antialiased;
+        }
+        .ambient-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: hidden; }
+        .ambient-bg .orb { position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.1; }
+        .ambient-bg .orb-1 { width: 600px; height: 600px; top: -200px; right: -100px; background: var(--accent-purple); animation: float 20s ease-in-out infinite; }
+        .ambient-bg .orb-2 { width: 500px; height: 500px; bottom: 20%; left: -150px; background: var(--accent-blue); animation: float 25s ease-in-out infinite reverse; }
+        @keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(30px, -30px) scale(1.05); } 66% { transform: translate(-20px, 20px) scale(0.95); } }
+
+        .container { max-width: 720px; margin: 0 auto; padding: 0 24px; }
+        .gradient-text { background: var(--gradient-main); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+        /* Nav */
+        nav { position: sticky; top: 0; z-index: 100; padding: 16px 0; background: rgba(10,10,15,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
+        .nav-inner { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+        .logo { font-size: 1.3rem; font-weight: 800; text-decoration: none; display: flex; align-items: center; gap: 10px; }
+        .logo-icon { width: 34px; height: 34px; border-radius: 10px; background: var(--gradient-main); display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+        .logo span { color: var(--text-primary); }
+        .back-link { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; font-weight: 500; }
+        .back-link:hover { color: var(--text-secondary); }
+
+        /* Header */
+        .page-header { text-align: center; padding: 56px 0 40px; position: relative; z-index: 1; }
+        .page-header h1 { font-size: clamp(1.8rem, 3.5vw, 2.4rem); font-weight: 900; margin-bottom: 12px; }
+        .page-header p { font-size: 1rem; color: var(--text-secondary); max-width: 500px; margin: 0 auto; }
+
+        /* Progress Bar */
+        .progress-wrap { position: relative; z-index: 1; margin-bottom: 40px; }
+        .progress-steps { display: flex; justify-content: space-between; align-items: center; position: relative; }
+        .progress-line { position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: rgba(255,255,255,0.06); transform: translateY(-50%); }
+        .progress-fill { position: absolute; top: 50%; left: 0; height: 2px; background: var(--gradient-main); transform: translateY(-50%); transition: width 0.4s ease; }
+        .progress-step {
+            width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 0.85rem; font-weight: 700; position: relative; z-index: 1; transition: all 0.3s ease;
+            background: var(--bg-secondary); border: 2px solid rgba(255,255,255,0.1); color: var(--text-muted);
+        }
+        .progress-step.active { background: var(--gradient-main); border-color: transparent; color: #fff; box-shadow: 0 0 20px rgba(79,110,247,0.3); border: none; }
+        .progress-step.completed { background: var(--accent-green); border-color: transparent; color: #fff; border: none; }
+        .step-label { position: absolute; bottom: -22px; font-size: 0.65rem; color: var(--text-muted); white-space: nowrap; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Form Card */
+        .form-card {
+            background: var(--glass); border: 1px solid var(--glass-border);
+            border-radius: var(--radius); padding: 40px 36px;
+            position: relative; z-index: 1; margin-bottom: 32px;
+            min-height: 400px;
+        }
+        .step-content { display: none; animation: fadeIn 0.3s ease; }
+        .step-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .step-content h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 8px; }
+        .step-content .step-desc { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 28px; }
+
+        /* Form Elements */
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+        .form-group label .required { color: var(--accent-rose); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+        input[type="text"], input[type="email"], input[type="tel"], input[type="url"], input[type="number"],
+        input[type="time"], input[type="date"], select, textarea {
+            width: 100%; padding: 12px 16px; border-radius: var(--radius-sm);
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
+            color: var(--text-primary); font-family: inherit; font-size: 0.9rem; outline: none;
+            transition: border-color 0.3s;
+        }
+        input:focus, select:focus, textarea:focus { border-color: rgba(79,110,247,0.4); background: rgba(255,255,255,0.08); }
+        input::placeholder, textarea::placeholder { color: var(--text-muted); }
+        select option { background: #1a1a2e; }
+        textarea { resize: vertical; min-height: 80px; }
+        .form-group .error-text { font-size: 0.78rem; color: var(--accent-rose); margin-top: 4px; display: none; }
+        .form-group.error input, .form-group.error select, .form-group.error textarea { border-color: var(--accent-rose); }
+        .form-group.error .error-text { display: block; }
+
+        /* Dynamic list (services, team, faqs) */
+        .dynamic-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+        .dynamic-item {
+            display: flex; gap: 12px; align-items: flex-start; padding: 16px;
+            background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04);
+            border-radius: var(--radius-sm);
+        }
+        .dynamic-item .fields { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+        .dynamic-item .fields .row { display: flex; gap: 8px; }
+        .dynamic-item .fields .row > * { flex: 1; }
+        .remove-btn {
+            width: 32px; height: 32px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);
+            background: rgba(244,63,94,0.1); color: var(--accent-rose);
+            cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s; flex-shrink: 0; margin-top: 4px;
+        }
+        .remove-btn:hover { background: rgba(244,63,94,0.2); }
+        .add-btn {
+            display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px;
+            border-radius: 8px; background: var(--gradient-subtle); border: 1px solid rgba(79,110,247,0.2);
+            color: var(--accent-blue); font-family: inherit; font-size: 0.85rem; font-weight: 600;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .add-btn:hover { background: rgba(79,110,247,0.15); }
+
+        /* Tone selector */
+        .tone-options { display: flex; gap: 12px; flex-wrap: wrap; }
+        .tone-option {
+            padding: 12px 24px; border-radius: var(--radius-sm);
+            background: rgba(255,255,255,0.03); border: 2px solid rgba(255,255,255,0.06);
+            cursor: pointer; transition: all 0.2s; text-align: center;
+        }
+        .tone-option:hover { border-color: rgba(255,255,255,0.12); }
+        .tone-option.selected { border-color: var(--accent-blue); background: rgba(79,110,247,0.08); }
+        .tone-option .emoji { font-size: 1.5rem; margin-bottom: 4px; }
+        .tone-option .tone-name { font-size: 0.85rem; font-weight: 600; }
+
+        /* Hours grid */
+        .hours-grid { display: flex; flex-direction: column; gap: 8px; }
+        .hours-row {
+            display: flex; align-items: center; gap: 12px; padding: 10px 14px;
+            background: rgba(255,255,255,0.02); border-radius: var(--radius-sm);
+        }
+        .hours-row .day { width: 90px; font-size: 0.88rem; font-weight: 600; flex-shrink: 0; }
+        .hours-row input[type="time"] { width: 130px; }
+        .hours-row .dash { color: var(--text-muted); }
+        .hours-row .closed-toggle {
+            margin-left: auto; display: flex; align-items: center; gap: 6px;
+            font-size: 0.8rem; color: var(--text-muted); cursor: pointer; user-select: none;
+        }
+        .hours-row .closed-toggle input { accent-color: var(--accent-blue); }
+
+        /* Review section */
+        .review-section { margin-bottom: 20px; }
+        .review-section h3 { font-size: 1rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .review-section h3 .edit-link { font-size: 0.78rem; font-weight: 600; color: var(--accent-blue); cursor: pointer; margin-left: auto; }
+        .review-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; }
+        .review-item { padding: 6px 0; }
+        .review-item .rlabel { font-size: 0.78rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+        .review-item .rvalue { font-size: 0.9rem; font-weight: 500; }
+
+        /* Navigation buttons */
+        .form-nav { display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1; margin-bottom: 60px; }
+        .nav-btn {
+            padding: 12px 28px; border-radius: 50px; font-weight: 600; font-size: 0.9rem;
+            cursor: pointer; transition: all 0.3s ease; border: none; font-family: inherit;
+        }
+        .nav-btn.prev { background: var(--glass); color: var(--text-secondary); border: 1px solid var(--glass-border); }
+        .nav-btn.prev:hover { background: rgba(255,255,255,0.08); }
+        .nav-btn.next { background: var(--gradient-main); color: #fff; box-shadow: 0 4px 20px rgba(79,110,247,0.3); }
+        .nav-btn.next:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(79,110,247,0.4); }
+        .nav-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+            z-index: 1000; display: none; justify-content: center; align-items: center; padding: 24px;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: var(--bg-secondary); border: 1px solid var(--glass-border);
+            border-radius: var(--radius); padding: 36px; max-width: 600px; width: 100%;
+            max-height: 80vh; overflow-y: auto; position: relative;
+        }
+        .modal h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 8px; }
+        .modal .subtitle { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 20px; }
+        .modal pre {
+            background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.06);
+            border-radius: var(--radius-sm); padding: 20px; font-size: 0.78rem;
+            overflow-x: auto; color: var(--accent-green); line-height: 1.5;
+            font-family: 'SF Mono', Monaco, monospace;
+        }
+        .modal-close {
+            position: absolute; top: 16px; right: 16px; background: none; border: none;
+            color: var(--text-muted); font-size: 1.5rem; cursor: pointer;
+        }
+        .modal-actions { display: flex; gap: 12px; margin-top: 20px; }
+        .modal-actions .nav-btn { flex: 1; text-align: center; }
+
+        @media (max-width: 640px) {
+            .form-row { grid-template-columns: 1fr; }
+            .form-card { padding: 28px 20px; }
+            .progress-step { width: 32px; height: 32px; font-size: 0.75rem; }
+            .step-label { display: none; }
+            .hours-row { flex-wrap: wrap; }
+            .hours-row .day { width: 70px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="ambient-bg">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+</div>
+
+<nav>
+    <div class="nav-inner">
+        <a href="../" class="logo"><div class="logo-icon">⚡</div><span>Actual Agent</span></a>
+        <a href="../" class="back-link">← Back to Home</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="page-header">
+        <h1>Set Up Your <span class="gradient-text">AI Employee</span></h1>
+        <p>Tell us about your business. We'll have your AI receptionist ready in 48 hours.</p>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-wrap">
+        <div class="progress-steps">
+            <div class="progress-line"></div>
+            <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+            <div class="progress-step active" data-step="1">1<span class="step-label">Business</span></div>
+            <div class="progress-step" data-step="2">2<span class="step-label">Services</span></div>
+            <div class="progress-step" data-step="3">3<span class="step-label">Team</span></div>
+            <div class="progress-step" data-step="4">4<span class="step-label">Hours</span></div>
+            <div class="progress-step" data-step="5">5<span class="step-label">FAQs</span></div>
+            <div class="progress-step" data-step="6">6<span class="step-label">Voice</span></div>
+            <div class="progress-step" data-step="7">7<span class="step-label">Review</span></div>
+        </div>
+    </div>
+
+    <!-- Form Card -->
+    <div class="form-card">
+
+        <!-- Step 1: Business Info -->
+        <div class="step-content active" id="step1">
+            <h2>🏢 Business Information</h2>
+            <p class="step-desc">The basics about your business so we can customize everything.</p>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Business Name <span class="required">*</span></label>
+                    <input type="text" id="bizName" placeholder="Smile Dental Care" required>
+                    <div class="error-text">Please enter your business name</div>
+                </div>
+                <div class="form-group">
+                    <label>Business Type <span class="required">*</span></label>
+                    <select id="bizType">
+                        <option value="">Select...</option>
+                        <option value="Dental Office">Dental Office</option>
+                        <option value="Real Estate Agency">Real Estate Agency</option>
+                        <option value="Insurance Agency">Insurance Agency</option>
+                        <option value="Law Firm">Law Firm</option>
+                        <option value="Medical Practice">Medical Practice</option>
+                        <option value="HVAC / Home Services">HVAC / Home Services</option>
+                        <option value="Auto Repair">Auto Repair</option>
+                        <option value="Consulting">Consulting</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <div class="error-text">Please select a business type</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Address</label>
+                <input type="text" id="bizAddress" placeholder="123 Main St, Frisco, TX 75034">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Phone <span class="required">*</span></label>
+                    <input type="tel" id="bizPhone" placeholder="(555) 123-4567">
+                    <div class="error-text">Please enter a phone number</div>
+                </div>
+                <div class="form-group">
+                    <label>Email <span class="required">*</span></label>
+                    <input type="email" id="bizEmail" placeholder="hello@smiledental.com">
+                    <div class="error-text">Please enter a valid email</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Website</label>
+                <input type="url" id="bizWebsite" placeholder="https://smiledental.com">
+            </div>
+        </div>
+
+        <!-- Step 2: Services & Pricing -->
+        <div class="step-content" id="step2">
+            <h2>💼 Services & Pricing</h2>
+            <p class="step-desc">List your main services so the AI can answer pricing questions accurately.</p>
+            <div class="dynamic-list" id="servicesList">
+                <div class="dynamic-item">
+                    <div class="fields">
+                        <div class="row">
+                            <input type="text" placeholder="Service name (e.g., Teeth Cleaning)" class="svc-name">
+                            <input type="text" placeholder="Price (e.g., $150)" class="svc-price" style="max-width:140px;">
+                        </div>
+                        <input type="text" placeholder="Brief description (optional)" class="svc-desc">
+                    </div>
+                    <button class="remove-btn" onclick="this.closest('.dynamic-item').remove()">×</button>
+                </div>
+            </div>
+            <button class="add-btn" onclick="addService()">+ Add Service</button>
+        </div>
+
+        <!-- Step 3: Team Members -->
+        <div class="step-content" id="step3">
+            <h2>👥 Team Members</h2>
+            <p class="step-desc">Who's on your team? The AI will know who to refer callers to.</p>
+            <div class="dynamic-list" id="teamList">
+                <div class="dynamic-item">
+                    <div class="fields">
+                        <div class="row">
+                            <input type="text" placeholder="Name (e.g., Dr. Sarah Patel)" class="tm-name">
+                            <input type="text" placeholder="Role (e.g., Lead Dentist)" class="tm-role">
+                        </div>
+                        <input type="text" placeholder="Specialties (e.g., Cosmetic, Orthodontics)" class="tm-spec">
+                    </div>
+                    <button class="remove-btn" onclick="this.closest('.dynamic-item').remove()">×</button>
+                </div>
+            </div>
+            <button class="add-btn" onclick="addTeamMember()">+ Add Team Member</button>
+        </div>
+
+        <!-- Step 4: Business Hours -->
+        <div class="step-content" id="step4">
+            <h2>🕐 Business Hours & Holidays</h2>
+            <p class="step-desc">When are you open? The AI handles after-hours differently.</p>
+            <div class="hours-grid" id="hoursGrid"></div>
+            <div class="form-group" style="margin-top: 24px;">
+                <label>Upcoming Holidays / Closures</label>
+                <textarea id="holidays" placeholder="e.g., Closed Dec 24-25, Jan 1, July 4..."></textarea>
+            </div>
+        </div>
+
+        <!-- Step 5: FAQs -->
+        <div class="step-content" id="step5">
+            <h2>❓ Frequently Asked Questions</h2>
+            <p class="step-desc">What do callers ask most? We'll train the AI with your answers.</p>
+            <div class="dynamic-list" id="faqsList">
+                <div class="dynamic-item">
+                    <div class="fields">
+                        <input type="text" placeholder="Question (e.g., Do you accept insurance?)" class="faq-q">
+                        <textarea placeholder="Answer" class="faq-a" style="min-height:60px;"></textarea>
+                    </div>
+                    <button class="remove-btn" onclick="this.closest('.dynamic-item').remove()">×</button>
+                </div>
+            </div>
+            <button class="add-btn" onclick="addFAQ()">+ Add FAQ</button>
+        </div>
+
+        <!-- Step 6: Communication Preferences -->
+        <div class="step-content" id="step6">
+            <h2>🎙️ Communication Style</h2>
+            <p class="step-desc">How should your AI receptionist sound?</p>
+
+            <div class="form-group">
+                <label>Tone of Voice</label>
+                <div class="tone-options" id="toneOptions">
+                    <div class="tone-option" data-tone="professional" onclick="selectTone(this)">
+                        <div class="emoji">👔</div>
+                        <div class="tone-name">Professional</div>
+                    </div>
+                    <div class="tone-option selected" data-tone="friendly" onclick="selectTone(this)">
+                        <div class="emoji">😊</div>
+                        <div class="tone-name">Friendly</div>
+                    </div>
+                    <div class="tone-option" data-tone="casual" onclick="selectTone(this)">
+                        <div class="emoji">✌️</div>
+                        <div class="tone-name">Casual</div>
+                    </div>
+                    <div class="tone-option" data-tone="warm" onclick="selectTone(this)">
+                        <div class="emoji">🤗</div>
+                        <div class="tone-name">Warm & Caring</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Custom Greeting</label>
+                <textarea id="greeting" placeholder="e.g., Thank you for calling Smile Dental Care! How can I help you today?"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>After-Hours Message</label>
+                <textarea id="afterHoursMsg" placeholder="e.g., Thanks for calling! We're currently closed but I can help you schedule an appointment or answer questions."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Anything else we should know?</label>
+                <textarea id="specialNotes" placeholder="Special instructions, things to avoid, competitors not to mention, etc."></textarea>
+            </div>
+        </div>
+
+        <!-- Step 7: Review -->
+        <div class="step-content" id="step7">
+            <h2>✅ Review & Submit</h2>
+            <p class="step-desc">Double-check everything before we start building your AI employee.</p>
+            <div id="reviewContent"></div>
+        </div>
+
+    </div>
+
+    <!-- Navigation -->
+    <div class="form-nav">
+        <button class="nav-btn prev" id="prevBtn" onclick="changeStep(-1)" disabled>← Back</button>
+        <button class="nav-btn next" id="nextBtn" onclick="changeStep(1)">Next Step →</button>
+    </div>
+</div>
+
+<!-- JSON Modal -->
+<div class="modal-overlay" id="modal">
+    <div class="modal">
+        <button class="modal-close" onclick="closeModal()">×</button>
+        <h2>🎉 Configuration Ready!</h2>
+        <p class="subtitle">Here's your AI employee configuration data. We'll use this to build your custom receptionist within 48 hours.</p>
+        <pre id="jsonOutput"></pre>
+        <div class="modal-actions">
+            <button class="nav-btn prev" onclick="copyJSON()">📋 Copy JSON</button>
+            <button class="nav-btn next" onclick="closeModal()">Done ✓</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentStep = 1;
+const totalSteps = 7;
+const days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const defaultHours = { open: '09:00', close: '17:00', closed: false };
+
+// Build hours grid
+const hoursGrid = document.getElementById('hoursGrid');
+days.forEach((day, i) => {
+    const isSat = i === 5, isSun = i === 6;
+    hoursGrid.innerHTML += `
+        <div class="hours-row" data-day="${day}">
+            <div class="day">${day}</div>
+            <input type="time" class="h-open" value="${isSun ? '' : (isSat ? '09:00' : '09:00')}" ${isSun ? 'disabled' : ''}>
+            <span class="dash">—</span>
+            <input type="time" class="h-close" value="${isSun ? '' : (isSat ? '14:00' : '17:00')}" ${isSun ? 'disabled' : ''}>
+            <label class="closed-toggle">
+                <input type="checkbox" class="h-closed" ${isSun ? 'checked' : ''} onchange="toggleDay(this)">
+                Closed
+            </label>
+        </div>`;
+});
+
+function toggleDay(cb) {
+    const row = cb.closest('.hours-row');
+    const inputs = row.querySelectorAll('input[type=time]');
+    inputs.forEach(inp => { inp.disabled = cb.checked; if (cb.checked) inp.value = ''; });
+}
+
+function addService() {
+    const list = document.getElementById('servicesList');
+    const item = document.createElement('div');
+    item.className = 'dynamic-item';
+    item.innerHTML = `<div class="fields"><div class="row"><input type="text" placeholder="Service name" class="svc-name"><input type="text" placeholder="Price" class="svc-price" style="max-width:140px;"></div><input type="text" placeholder="Brief description (optional)" class="svc-desc"></div><button class="remove-btn" onclick="this.closest('.dynamic-item').remove()">×</button>`;
+    list.appendChild(item);
+}
+
+function addTeamMember() {
+    const list = document.getElementById('teamList');
+    const item = document.createElement('div');
+    item.className = 'dynamic-item';
+    item.innerHTML = `<div class="fields"><div class="row"><input type="text" placeholder="Name" class="tm-name"><input type="text" placeholder="Role" class="tm-role"></div><input type="text" placeholder="Specialties" class="tm-spec"></div><button class="remove-btn" onclick="this.closest('.dynamic-item').remove()">×</button>`;
+    list.appendChild(item);
+}
+
+function addFAQ() {
+    const list = document.getElementById('faqsList');
+    const item = document.createElement('div');
+    item.className = 'dynamic-item';
+    item.innerHTML = `<div class="fields"><input type="text" placeholder="Question" class="faq-q"><textarea placeholder="Answer" class="faq-a" style="min-height:60px;"></textarea></div><button class="remove-btn" onclick="this.closest('.dynamic-item').remove()">×</button>`;
+    list.appendChild(item);
+}
+
+function selectTone(el) {
+    document.querySelectorAll('.tone-option').forEach(t => t.classList.remove('selected'));
+    el.classList.add('selected');
+}
+
+function getFormData() {
+    const data = {
+        business: {
+            name: document.getElementById('bizName').value,
+            type: document.getElementById('bizType').value,
+            address: document.getElementById('bizAddress').value,
+            phone: document.getElementById('bizPhone').value,
+            email: document.getElementById('bizEmail').value,
+            website: document.getElementById('bizWebsite').value,
+        },
+        services: [],
+        team: [],
+        hours: {},
+        holidays: document.getElementById('holidays').value,
+        faqs: [],
+        communication: {
+            tone: document.querySelector('.tone-option.selected')?.dataset.tone || 'friendly',
+            greeting: document.getElementById('greeting').value,
+            afterHoursMessage: document.getElementById('afterHoursMsg').value,
+            specialNotes: document.getElementById('specialNotes').value,
+        }
+    };
+
+    document.querySelectorAll('#servicesList .dynamic-item').forEach(item => {
+        const name = item.querySelector('.svc-name')?.value;
+        if (name) data.services.push({ name, price: item.querySelector('.svc-price')?.value || '', description: item.querySelector('.svc-desc')?.value || '' });
+    });
+
+    document.querySelectorAll('#teamList .dynamic-item').forEach(item => {
+        const name = item.querySelector('.tm-name')?.value;
+        if (name) data.team.push({ name, role: item.querySelector('.tm-role')?.value || '', specialties: item.querySelector('.tm-spec')?.value || '' });
+    });
+
+    document.querySelectorAll('.hours-row').forEach(row => {
+        const day = row.dataset.day;
+        const closed = row.querySelector('.h-closed').checked;
+        data.hours[day] = closed ? { closed: true } : { open: row.querySelector('.h-open').value, close: row.querySelector('.h-close').value };
+    });
+
+    document.querySelectorAll('#faqsList .dynamic-item').forEach(item => {
+        const q = item.querySelector('.faq-q')?.value;
+        if (q) data.faqs.push({ question: q, answer: item.querySelector('.faq-a')?.value || '' });
+    });
+
+    return data;
+}
+
+function validateStep(step) {
+    let valid = true;
+    if (step === 1) {
+        const fields = [
+            { id: 'bizName', check: v => v.trim() !== '' },
+            { id: 'bizType', check: v => v !== '' },
+            { id: 'bizPhone', check: v => v.trim() !== '' },
+            { id: 'bizEmail', check: v => /\S+@\S+\.\S+/.test(v) },
+        ];
+        fields.forEach(f => {
+            const el = document.getElementById(f.id);
+            const group = el.closest('.form-group');
+            if (!f.check(el.value)) { group.classList.add('error'); valid = false; }
+            else { group.classList.remove('error'); }
+        });
+    }
+    return valid;
+}
+
+function buildReview() {
+    const data = getFormData();
+    const rc = document.getElementById('reviewContent');
+    let html = '';
+
+    html += `<div class="review-section"><h3>🏢 Business Info <span class="edit-link" onclick="goToStep(1)">Edit</span></h3><div class="review-grid">`;
+    Object.entries(data.business).forEach(([k, v]) => {
+        if (v) html += `<div class="review-item"><div class="rlabel">${k}</div><div class="rvalue">${v}</div></div>`;
+    });
+    html += `</div></div>`;
+
+    if (data.services.length) {
+        html += `<div class="review-section"><h3>💼 Services (${data.services.length}) <span class="edit-link" onclick="goToStep(2)">Edit</span></h3><div class="review-grid">`;
+        data.services.forEach(s => { html += `<div class="review-item"><div class="rlabel">${s.name}</div><div class="rvalue">${s.price || 'No price listed'}</div></div>`; });
+        html += `</div></div>`;
+    }
+
+    if (data.team.length) {
+        html += `<div class="review-section"><h3>👥 Team (${data.team.length}) <span class="edit-link" onclick="goToStep(3)">Edit</span></h3><div class="review-grid">`;
+        data.team.forEach(t => { html += `<div class="review-item"><div class="rlabel">${t.name}</div><div class="rvalue">${t.role}</div></div>`; });
+        html += `</div></div>`;
+    }
+
+    html += `<div class="review-section"><h3>🕐 Hours <span class="edit-link" onclick="goToStep(4)">Edit</span></h3><div class="review-grid">`;
+    Object.entries(data.hours).forEach(([day, h]) => {
+        html += `<div class="review-item"><div class="rlabel">${day}</div><div class="rvalue">${h.closed ? 'Closed' : h.open + ' — ' + h.close}</div></div>`;
+    });
+    html += `</div></div>`;
+
+    if (data.faqs.length) {
+        html += `<div class="review-section"><h3>❓ FAQs (${data.faqs.length}) <span class="edit-link" onclick="goToStep(5)">Edit</span></h3>`;
+        data.faqs.forEach(f => { html += `<div class="review-item" style="margin-bottom:8px;"><div class="rlabel">${f.question}</div><div class="rvalue">${f.answer || '(no answer yet)'}</div></div>`; });
+        html += `</div>`;
+    }
+
+    html += `<div class="review-section"><h3>🎙️ Communication <span class="edit-link" onclick="goToStep(6)">Edit</span></h3><div class="review-grid">`;
+    html += `<div class="review-item"><div class="rlabel">Tone</div><div class="rvalue" style="text-transform:capitalize;">${data.communication.tone}</div></div>`;
+    if (data.communication.greeting) html += `<div class="review-item"><div class="rlabel">Greeting</div><div class="rvalue">${data.communication.greeting}</div></div>`;
+    html += `</div></div>`;
+
+    rc.innerHTML = html;
+}
+
+function goToStep(step) {
+    currentStep = step;
+    updateUI();
+}
+
+function changeStep(dir) {
+    if (dir === 1 && !validateStep(currentStep)) return;
+    const next = currentStep + dir;
+    if (next < 1 || next > totalSteps) return;
+    if (currentStep === totalSteps && dir === 1) {
+        // Submit
+        const data = getFormData();
+        document.getElementById('jsonOutput').textContent = JSON.stringify(data, null, 2);
+        document.getElementById('modal').classList.add('open');
+        return;
+    }
+    currentStep = next;
+    if (currentStep === totalSteps) buildReview();
+    updateUI();
+}
+
+function updateUI() {
+    // Steps
+    document.querySelectorAll('.step-content').forEach((s, i) => {
+        s.classList.toggle('active', i + 1 === currentStep);
+    });
+
+    // Progress
+    const pct = ((currentStep - 1) / (totalSteps - 1)) * 100;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.querySelectorAll('.progress-step').forEach((s, i) => {
+        s.classList.remove('active', 'completed');
+        if (i + 1 === currentStep) s.classList.add('active');
+        else if (i + 1 < currentStep) s.classList.add('completed');
+    });
+
+    // Buttons
+    document.getElementById('prevBtn').disabled = currentStep === 1;
+    const nextBtn = document.getElementById('nextBtn');
+    nextBtn.textContent = currentStep === totalSteps ? 'Submit Configuration →' : 'Next Step →';
+}
+
+function closeModal() {
+    document.getElementById('modal').classList.remove('open');
+}
+
+function copyJSON() {
+    const text = document.getElementById('jsonOutput').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector('.modal-actions .nav-btn.prev');
+        btn.textContent = '✓ Copied!';
+        setTimeout(() => { btn.textContent = '📋 Copy JSON'; }, 2000);
+    });
+}
+
+updateUI();
+</script>
+
+</body>
+</html>
