@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Actual Agent — See It In Action</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0a0e1a;--bg2:#111827;--bg3:#1a2236;--surface:#1e2a3a;
+--border:#2a3650;--text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+--blue:#3b82f6;--purple:#8b5cf6;--cyan:#06b6d4;
+--grad:linear-gradient(135deg,#3b82f6,#8b5cf6);
+--grad2:linear-gradient(135deg,#06b6d4,#3b82f6);
+--customer-bg:#2a3650;--agent-bg:linear-gradient(135deg,#1e40af,#6d28d9);
+--sms-agent:#1a5e2a;--sms-customer:#2a3650;
+--radius:16px;--radius-sm:12px;
+}
+html{scroll-behavior:smooth}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
+a{color:var(--blue);text-decoration:none}
+button{cursor:pointer;font-family:inherit}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* === HERO === */
+.hero{text-align:center;padding:80px 24px 60px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-200px;left:50%;transform:translateX(-50%);width:800px;height:800px;background:radial-gradient(circle,rgba(59,130,246,.12) 0%,rgba(139,92,246,.06) 40%,transparent 70%);pointer-events:none}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);border-radius:40px;padding:8px 20px;font-size:13px;color:var(--blue);margin-bottom:24px;font-weight:500}
+.hero-badge .pulse{width:8px;height:8px;border-radius:50%;background:var(--blue);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
+.hero h1{font-size:clamp(36px,6vw,64px);font-weight:800;background:linear-gradient(135deg,#fff 0%,#94a3b8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1;margin-bottom:20px;letter-spacing:-1px}
+.hero .sub{font-size:clamp(16px,2.5vw,20px);color:var(--text2);max-width:680px;margin:0 auto 32px;line-height:1.7}
+.hero .intro{font-size:15px;color:var(--text3);max-width:600px;margin:0 auto;line-height:1.7;border-top:1px solid var(--border);padding-top:24px}
+.hero .intro strong{color:var(--text2)}
+
+/* === SCENARIO NAV === */
+.scenario-nav{max-width:1100px;margin:0 auto;padding:0 24px 48px}
+.scenario-nav h2{text-align:center;font-size:14px;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin-bottom:24px;font-weight:600}
+.nav-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+@media(max-width:900px){.nav-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:600px){.nav-grid{grid-template-columns:1fr 1fr}.nav-grid .nav-card:last-child{grid-column:1/-1}}
+.nav-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:20px 16px;text-align:center;transition:all .25s ease;position:relative;overflow:hidden}
+.nav-card::before{content:'';position:absolute;inset:0;background:var(--grad);opacity:0;transition:opacity .25s}
+.nav-card:hover{border-color:rgba(59,130,246,.4);transform:translateY(-2px);box-shadow:0 8px 32px rgba(59,130,246,.1)}
+.nav-card.active{border-color:var(--blue);background:rgba(59,130,246,.08)}
+.nav-card.active::after{content:'';position:absolute;bottom:0;left:20%;right:20%;height:2px;background:var(--grad);border-radius:2px}
+.nav-card .emoji{font-size:28px;margin-bottom:8px;display:block;position:relative;z-index:1}
+.nav-card .label{font-size:13px;font-weight:600;color:var(--text);position:relative;z-index:1;line-height:1.3}
+.nav-card .desc{font-size:11px;color:var(--text3);margin-top:4px;position:relative;z-index:1}
+.nav-card.showstopper{border-color:rgba(239,68,68,.3)}
+.nav-card.showstopper .star{position:absolute;top:8px;right:8px;font-size:9px;background:rgba(239,68,68,.15);color:#ef4444;padding:2px 8px;border-radius:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+
+/* === DEMO AREA === */
+.demo-area{max-width:800px;margin:0 auto;padding:0 24px 64px}
+
+/* Controls */
+.controls{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px;padding:16px 20px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.controls-left{display:flex;align-items:center;gap:12px}
+.controls-right{display:flex;align-items:center;gap:12px}
+.ctrl-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);color:var(--blue);border-radius:8px;padding:7px 14px;font-size:13px;font-weight:500;transition:all .2s}
+.ctrl-btn:hover{background:rgba(59,130,246,.2)}
+.ctrl-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.speed-toggle{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.speed-toggle button{background:var(--bg3);border:none;color:var(--text3);padding:7px 14px;font-size:13px;font-weight:600;transition:all .2s}
+.speed-toggle button.active{background:var(--blue);color:#fff}
+.speed-toggle button+button{border-left:1px solid var(--border)}
+.progress-dots{display:flex;gap:6px;align-items:center}
+.progress-dots .dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:all .3s}
+.progress-dots .dot.active{background:var(--blue);transform:scale(1.3)}
+.progress-dots .dot.done{background:var(--purple)}
+
+/* Chat Window */
+.chat-window{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;min-height:400px;position:relative}
+.chat-header{padding:16px 20px;background:var(--bg3);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.chat-header .avatar{width:40px;height:40px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;box-shadow:0 2px 8px rgba(59,130,246,.3)}
+.chat-header .info{flex:1}
+.chat-header .name{font-weight:700;font-size:15px}
+.chat-header .status{font-size:12px;color:#22c55e;display:flex;align-items:center;gap:4px}
+.chat-header .status::before{content:'';width:6px;height:6px;border-radius:50%;background:#22c55e}
+.chat-header .call-type{font-size:11px;color:var(--text3);background:var(--bg);padding:4px 10px;border-radius:6px;font-weight:500}
+
+.emergency-banner{background:linear-gradient(135deg,rgba(239,68,68,.15),rgba(239,68,68,.05));border-bottom:1px solid rgba(239,68,68,.2);padding:12px 20px;text-align:center;font-size:13px;color:#fca5a5;font-weight:600;display:none}
+.emergency-banner .time-icon{margin-right:6px}
+.scenario-4 .emergency-banner{display:block}
+
+.chat-body{padding:20px;min-height:350px;max-height:500px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;scroll-behavior:smooth}
+
+/* Messages */
+.msg-row{display:flex;gap:8px;max-width:85%;opacity:0;transform:translateY(12px);animation:msgIn .4s ease forwards}
+@keyframes msgIn{to{opacity:1;transform:translateY(0)}}
+.msg-row.customer{align-self:flex-end;flex-direction:row-reverse}
+.msg-row .avatar-sm{width:28px;height:28px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-top:4px}
+.msg-row.customer .avatar-sm{background:var(--customer-bg)}
+.msg-bubble{padding:12px 16px;border-radius:18px;font-size:14px;line-height:1.55;position:relative;word-wrap:break-word}
+.msg-row:not(.customer) .msg-bubble{background:var(--agent-bg);border-bottom-left-radius:4px;color:#fff}
+.msg-row.customer .msg-bubble{background:var(--customer-bg);border-bottom-right-radius:4px;color:var(--text)}
+
+/* SMS style for scenario 5 */
+.sms-mode .msg-row:not(.customer) .msg-bubble{background:var(--sms-agent);border-radius:18px;border-bottom-left-radius:4px}
+.sms-mode .msg-row.customer .msg-bubble{background:var(--sms-customer)}
+
+.msg-time{font-size:10px;color:var(--text3);margin-top:4px;padding:0 8px}
+.msg-row.customer .msg-time{text-align:right}
+
+/* Typing indicator */
+.typing-indicator{display:flex;gap:8px;align-items:center;max-width:85%;padding:0 0 0 36px}
+.typing-indicator .avatar-sm{width:28px;height:28px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.typing-bubble{background:var(--bg3);border-radius:18px;border-bottom-left-radius:4px;padding:12px 18px;display:flex;gap:5px;align-items:center}
+.typing-bubble span{width:7px;height:7px;border-radius:50%;background:var(--text3);animation:typeDot 1.4s infinite}
+.typing-bubble span:nth-child(2){animation-delay:.2s}
+.typing-bubble span:nth-child(3){animation-delay:.4s}
+@keyframes typeDot{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-4px)}}
+
+/* Results Card */
+.results-card{margin-top:24px;background:linear-gradient(135deg,rgba(34,197,94,.08),rgba(59,130,246,.08));border:1px solid rgba(34,197,94,.2);border-radius:var(--radius-sm);padding:20px 24px;opacity:0;transform:translateY(10px);transition:all .5s ease}
+.results-card.show{opacity:1;transform:translateY(0)}
+.results-card h4{font-size:13px;text-transform:uppercase;letter-spacing:1.5px;color:#22c55e;margin-bottom:10px;font-weight:700}
+.results-card .metrics{display:flex;flex-wrap:wrap;gap:8px 16px}
+.results-card .metric{font-size:14px;color:var(--text);display:flex;align-items:center;gap:6px}
+.results-card .metric::before{content:'✅';font-size:12px}
+
+/* === CTA === */
+.cta{text-align:center;padding:80px 24px;position:relative}
+.cta::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent)}
+.cta h2{font-size:clamp(28px,4vw,42px);font-weight:800;margin-bottom:12px;background:linear-gradient(135deg,#fff,#94a3b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.cta .sub{font-size:18px;color:var(--text2);margin-bottom:36px}
+.cta-buttons{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;background:var(--grad);color:#fff;border:none;border-radius:12px;padding:16px 32px;font-size:16px;font-weight:700;transition:all .3s;box-shadow:0 4px 20px rgba(59,130,246,.3)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(59,130,246,.4)}
+.btn-secondary{display:inline-flex;align-items:center;gap:8px;background:transparent;color:var(--text);border:1px solid var(--border);border-radius:12px;padding:16px 32px;font-size:16px;font-weight:600;transition:all .3s}
+.btn-secondary:hover{border-color:var(--blue);color:var(--blue)}
+
+/* Footer */
+.footer{text-align:center;padding:40px 24px;border-top:1px solid var(--border);font-size:13px;color:var(--text3)}
+
+/* Animations */
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.shimmer{background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.04) 50%,transparent 100%);background-size:200% 100%;animation:shimmer 3s infinite}
+
+/* Mobile tweaks */
+@media(max-width:600px){
+  .hero{padding:60px 20px 40px}
+  .controls{flex-direction:column;align-items:stretch}
+  .controls-left,.controls-right{justify-content:center}
+  .msg-row{max-width:92%}
+  .chat-body{padding:16px}
+  .nav-card{padding:14px 10px}
+  .nav-card .emoji{font-size:22px}
+  .nav-card .label{font-size:12px}
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge"><span class="pulse"></span> Live Interactive Demo</div>
+  <h1>See Actual Agent in Action</h1>
+  <p class="sub">Watch how our AI employee handles real business scenarios — 24/7, no missed calls, no hold times</p>
+  <p class="intro">Meet <strong>Alex</strong>, the AI receptionist for <strong>Bright Smile Dental</strong> in Frisco, TX. Below are 5 real scenarios showing how Alex handles calls and texts — from booking appointments to triaging emergencies at 10 PM.</p>
+</section>
+
+<!-- SCENARIO NAV -->
+<nav class="scenario-nav">
+  <h2>Choose a Scenario</h2>
+  <div class="nav-grid">
+    <button class="nav-card active" data-scenario="0" onclick="selectScenario(0)">
+      <span class="emoji">🆕</span>
+      <div class="label">New Patient Inquiry</div>
+      <div class="desc">Lead capture</div>
+    </button>
+    <button class="nav-card" data-scenario="1" onclick="selectScenario(1)">
+      <span class="emoji">📅</span>
+      <div class="label">Appointment Booking</div>
+      <div class="desc">Existing patient</div>
+    </button>
+    <button class="nav-card" data-scenario="2" onclick="selectScenario(2)">
+      <span class="emoji">🏥</span>
+      <div class="label">Insurance Question</div>
+      <div class="desc">Complex multi-part</div>
+    </button>
+    <button class="nav-card showstopper" data-scenario="3" onclick="selectScenario(3)">
+      <span class="star">★ Must See</span>
+      <span class="emoji">🚨</span>
+      <div class="label">After-Hours Emergency</div>
+      <div class="desc">10 PM toothache</div>
+    </button>
+    <button class="nav-card" data-scenario="4" onclick="selectScenario(4)">
+      <span class="emoji">📱</span>
+      <div class="label">Missed Appointment</div>
+      <div class="desc">Text follow-up</div>
+    </button>
+  </div>
+</nav>
+
+<!-- DEMO AREA -->
+<section class="demo-area" id="demo-area">
+  <!-- Controls -->
+  <div class="controls">
+    <div class="controls-left">
+      <button class="ctrl-btn" id="btn-replay" onclick="replayScenario()">⟳ Replay</button>
+      <button class="ctrl-btn" id="btn-autoplay" onclick="toggleAutoplay()">▶ Auto-play All</button>
+    </div>
+    <div class="controls-right">
+      <div class="speed-toggle">
+        <button class="active" onclick="setSpeed(1,this)">1×</button>
+        <button onclick="setSpeed(2,this)">2×</button>
+      </div>
+      <div class="progress-dots" id="progress-dots">
+        <div class="dot active"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat Window -->
+  <div class="chat-window" id="chat-window">
+    <div class="chat-header">
+      <div class="avatar">🤖</div>
+      <div class="info">
+        <div class="name">Alex — AI Receptionist</div>
+        <div class="status">Online • Bright Smile Dental</div>
+      </div>
+      <div class="call-type" id="call-type">📞 Phone Call</div>
+    </div>
+    <div class="emergency-banner" id="emergency-banner">
+      <span class="time-icon">🕙</span> Saturday, 10:00 PM — Office closed 9 hours ago
+    </div>
+    <div class="chat-body" id="chat-body"></div>
+  </div>
+
+  <!-- Results Card -->
+  <div class="results-card" id="results-card">
+    <h4>Outcome</h4>
+    <div class="metrics" id="results-metrics"></div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <h2>Ready to see this for YOUR business?</h2>
+  <p class="sub">We build your AI employee in 48 hours.</p>
+  <div class="cta-buttons">
+    <a href="https://kollaakhil.github.io/actualagent/#contact" class="btn-primary">Get Started →</a>
+    <a href="https://kollaakhil.github.io/actualagent/#pricing" class="btn-secondary">View Pricing →</a>
+  </div>
+</section>
+
+<footer class="footer">
+  &copy; 2026 Actual Agent. All rights reserved.
+</footer>
+
+<script>
+// ============ DATA ============
+const scenarios = [
+  {
+    type:'call', label:'New Patient Inquiry',
+    messages:[
+      {from:'customer',text:"Hi, I'm looking for a dentist in the Frisco area. Do you guys do teeth whitening?"},
+      {from:'agent',text:"Hi, thanks for calling Bright Smile Dental! This is Alex. We absolutely do teeth whitening! We offer in-office professional whitening with Zoom — most patients see results in about an hour. It typically runs between $350 and $500 depending on the treatment. We also have take-home kits starting around $200 if you prefer that route. Have you had whitening done before?"},
+      {from:'customer',text:"No, first time. How long do results last?"},
+      {from:'agent',text:"Great question! With the in-office treatment, results usually last 6 months to a year, and the take-home kit helps maintain it. Dr. Chen actually does a quick consultation first to make sure everything looks good and recommend the best option for you. Want me to get you set up with a consultation? It's quick and there's no obligation."},
+      {from:'customer',text:"Sure, what do you have available?"},
+      {from:'agent',text:"Awesome! Let me check... We have openings this Thursday at 10:30 AM or next Monday at 2:00 PM. What works better for you?"},
+      {from:'customer',text:"Thursday works."},
+      {from:'agent',text:"Perfect! Can I grab your name?"},
+      {from:'customer',text:"Jessica Miller."},
+      {from:'agent',text:"Great, Jessica! And what's the best number to reach you?"},
+      {from:'customer',text:"214-555-0923."},
+      {from:'agent',text:"Got it. And do you have dental insurance?"},
+      {from:'customer',text:"Yeah, Delta Dental."},
+      {from:'agent',text:"Oh perfect — we accept Delta Dental, so we can check your coverage when you come in. You're all set, Jessica! Thursday at 10:30 AM for a whitening consultation with Dr. Chen. We're at 8300 Gaylord Parkway, Suite 100 in Frisco — free parking right behind the building. I'll send you a confirmation text. Anything else I can help with?"},
+      {from:'customer',text:"Nope, that's it. Thanks!"},
+      {from:'agent',text:"Thank you, Jessica! We're excited to meet you Thursday. Have a great day! 😊"}
+    ],
+    results:["New patient captured","Appointment booked","Insurance noted","Lifetime value: $500–$5,000"]
+  },
+  {
+    type:'call', label:'Appointment Booking',
+    messages:[
+      {from:'customer',text:"Hey, I need to schedule a cleaning. I was in about 6 months ago."},
+      {from:'agent',text:"Hey, welcome back! I'd love to get you scheduled. Can I grab your name so I can pull up your info?"},
+      {from:'customer',text:"Sure, it's David Park."},
+      {from:'agent',text:"Hi David! Great to have you back. So a routine cleaning — any issues since your last visit? Any sensitivity or pain?"},
+      {from:'customer',text:"Nope, everything's been good."},
+      {from:'agent',text:"Glad to hear it! Let me check availability. We have this Wednesday at 9:00 AM, Thursday at 3:30 PM, or next Monday at 11:00 AM. What works for you?"},
+      {from:'customer',text:"Wednesday at 9 is perfect."},
+      {from:'agent',text:"Done! David Park, routine cleaning, this Wednesday at 9:00 AM. You'll get a text reminder the day before. Anything else?"},
+      {from:'customer',text:"Nah, I'm good."},
+      {from:'agent',text:"See you Wednesday, David! Have a good one. 👋"}
+    ],
+    results:["Appointment booked in 90 seconds","Reminder queued","Zero hold time"]
+  },
+  {
+    type:'call', label:'Insurance Question',
+    messages:[
+      {from:'customer',text:"Hi, I'm thinking about switching dentists and I wanted to check — do you take Cigna?"},
+      {from:'agent',text:"Hi! Thanks for considering Bright Smile Dental. Yes, we do accept Cigna Dental! We're in-network with their PPO plan. Most preventive care like cleanings and exams are covered at 80 to 100%, and restorative work like fillings and crowns are typically covered at 50 to 80%, depending on your specific plan."},
+      {from:'customer',text:"Oh great. What about for my kids? My daughter needs braces."},
+      {from:'agent',text:"Good news there too! We have Dr. Torres on our team — he's our orthodontist and an Invisalign Diamond Provider, top 1% nationally. Traditional braces typically range from $3,500 to $5,500, and Invisalign runs $4,000 to $6,000. Cigna often covers a portion of orthodontic treatment. We'd verify your exact benefits at the consultation, which is free. Want to set one up?"},
+      {from:'customer',text:"Yeah, that would be great. What about for my son? He's only 5."},
+      {from:'agent',text:"We've got him covered too! Dr. Park is our pediatric dentist — she's wonderful with kids. They even get to pick a prize from the treasure chest after! We could schedule both kids on the same day. What works — mornings or afternoons?"},
+      {from:'customer',text:"Mornings are better."},
+      {from:'agent',text:"How about next Tuesday? Your daughter's ortho consultation at 9:00 AM and your son's checkup at 9:30. Knock both out in one trip."},
+      {from:'customer',text:"That's perfect."},
+      {from:'agent',text:"Wonderful! Can I get your name and a good number? 📋"}
+    ],
+    results:["Insurance verified","2 appointments booked for family","3 doctors referenced accurately"]
+  },
+  {
+    type:'call', label:'After-Hours Emergency', emergency:true,
+    messages:[
+      {from:'customer',text:"Hi, I know you're closed, but I have a really bad toothache and I don't know what to do. It's been getting worse all day."},
+      {from:'agent',text:"Hi, I'm so sorry you're dealing with that — tooth pain is the worst. I'm here to help, even though the office is closed. Let me ask a couple questions. Can you describe the pain? Is it sharp, throbbing, or constant?"},
+      {from:'customer',text:"It's throbbing. Like really pulsing. On the left side."},
+      {from:'agent',text:"I hear you. Is there any swelling in your face or jaw?"},
+      {from:'customer',text:"A little bit, yeah. My cheek is kind of puffy."},
+      {from:'agent',text:"Okay. And are you having any trouble breathing or swallowing?"},
+      {from:'customer',text:"No, nothing like that."},
+      {from:'agent',text:"Good. Here's what I'd recommend right now: take 400-600mg of ibuprofen (2-3 Advil), and you can alternate with Tylenol if needed. Cold compress on your cheek — 15 minutes on, 15 off. Warm salt water rinse too — half teaspoon of salt in 8oz warm water. Avoid very hot or cold foods, and sleep with your head elevated tonight."},
+      {from:'customer',text:"Okay. Should I go to the ER?"},
+      {from:'agent',text:"Based on what you're describing — throbbing pain and slight swelling but no trouble breathing — this sounds like it could be an infection or abscess. Painful, but probably not an ER situation tonight. However, if swelling gets significantly worse, you develop a fever, or have any trouble breathing, go to the ER right away. Otherwise, I'm booking you into our first emergency slot Monday at 8 AM. I'm also flagging this for Dr. Chen so she's prepared."},
+      {from:'customer',text:"Yes, please."},
+      {from:'agent',text:"Done. Mark Thompson, emergency appointment, Monday 8:00 AM with Dr. Chen. Hang in there — the ibuprofen should kick in within 30 minutes. If anything changes tonight, call back or head to the ER. We'll take great care of you Monday. ❤️"},
+      {from:'customer',text:"Thank you so much. I feel a lot better just knowing I have an appointment."},
+      {from:'agent',text:"Of course. Get some rest, Mark. Feel better. 💙"}
+    ],
+    results:["Emergency triaged at 10 PM","Medical guidance provided","Morning appointment booked","Doctor flagged"]
+  },
+  {
+    type:'sms', label:'Missed Appointment Recovery',
+    messages:[
+      {from:'agent',text:"Hi Sarah! We missed you at your cleaning appointment yesterday at Bright Smile Dental. No worries at all — life happens! 😊 Want to reschedule? We have openings this week. Just reply with a day/time that works."},
+      {from:'customer',text:"Oh gosh, I totally forgot! Can I come in Friday?"},
+      {from:'agent',text:"Of course! We have Friday at 9:00 AM or 11:30 AM. Which one works?"},
+      {from:'customer',text:"9 AM please!"},
+      {from:'agent',text:"You're all set! Sarah, routine cleaning, this Friday at 9:00 AM. I'll send you a reminder the day before this time. 😉 See you then!"},
+      {from:'customer',text:"Ha! Yes please, I clearly need the reminder. Thank you!"},
+      {from:'agent',text:"You got it! See you Friday, Sarah! 😄"}
+    ],
+    results:["No-show recovered via text","$175 cleaning rebooked","30 seconds, zero staff time"]
+  }
+];
+
+// ============ STATE ============
+let currentScenario = 0;
+let speed = 1;
+let playing = false;
+let autoplayActive = false;
+let timeouts = [];
+let currentMsgIndex = 0;
+
+// ============ FUNCTIONS ============
+function clearTimeouts(){timeouts.forEach(t=>clearTimeout(t));timeouts=[];}
+
+function selectScenario(idx){
+  clearTimeouts();
+  playing = false;
+  currentScenario = idx;
+
+  // Update nav
+  document.querySelectorAll('.nav-card').forEach((c,i)=>{
+    c.classList.toggle('active',i===idx);
+  });
+
+  // Update progress dots
+  document.querySelectorAll('.progress-dots .dot').forEach((d,i)=>{
+    d.classList.toggle('active',i===idx);
+    d.classList.toggle('done',i<idx);
+  });
+
+  // Update chat window
+  const s = scenarios[idx];
+  const chatWindow = document.getElementById('chat-window');
+  chatWindow.className = 'chat-window' + (s.emergency?' scenario-4':'') + (s.type==='sms'?' sms-mode':'');
+  document.getElementById('call-type').textContent = s.type==='sms'?'💬 Text Message':'📞 Phone Call';
+  document.getElementById('emergency-banner').style.display = s.emergency?'block':'none';
+
+  // Clear chat
+  const body = document.getElementById('chat-body');
+  body.innerHTML = '';
+
+  // Hide results
+  const rc = document.getElementById('results-card');
+  rc.classList.remove('show');
+
+  // Play messages
+  playMessages(idx);
+
+  // Scroll to demo
+  document.getElementById('demo-area').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function getDelay(msg){
+  const base = msg.from==='agent' ? Math.min(800 + msg.text.length * 8, 3500) : Math.min(400 + msg.text.length * 5, 1500);
+  return base / speed;
+}
+
+function getTypingDelay(msg){
+  const base = msg.from==='agent' ? Math.min(600 + msg.text.length * 4, 2500) : 0;
+  return base / speed;
+}
+
+function formatTime(idx){
+  const baseHour = currentScenario===3 ? 22 : 9;
+  const mins = idx * 12 + Math.floor(Math.random()*5);
+  const h = baseHour + Math.floor(mins/60);
+  const m = mins % 60;
+  const h12 = h>12?h-12:h;
+  const ampm = h>=12?'PM':'AM';
+  return h12+':'+(m<10?'0':'')+m+' '+ampm;
+}
+
+function playMessages(scenarioIdx){
+  const s = scenarios[scenarioIdx];
+  const body = document.getElementById('chat-body');
+  let delay = 300 / speed;
+  playing = true;
+  currentMsgIndex = 0;
+
+  s.messages.forEach((msg,i)=>{
+    const typingDelay = getTypingDelay(msg);
+    const msgDelay = getDelay(msg);
+
+    // Show typing indicator for agent
+    if(msg.from==='agent'){
+      timeouts.push(setTimeout(()=>{
+        if(currentScenario!==scenarioIdx)return;
+        showTyping(body);
+      }, delay));
+      delay += typingDelay;
+    }
+
+    // Show message
+    timeouts.push(setTimeout(()=>{
+      if(currentScenario!==scenarioIdx)return;
+      removeTyping(body);
+      addMessage(body, msg, i);
+      currentMsgIndex = i+1;
+    }, delay));
+
+    delay += msgDelay;
+  });
+
+  // Show results
+  timeouts.push(setTimeout(()=>{
+    if(currentScenario!==scenarioIdx)return;
+    showResults(scenarioIdx);
+    playing = false;
+    if(autoplayActive && scenarioIdx < 4){
+      timeouts.push(setTimeout(()=>selectScenario(scenarioIdx+1), 2000/speed));
+    } else {
+      autoplayActive = false;
+      document.getElementById('btn-autoplay').classList.remove('active');
+    }
+  }, delay + 500/speed));
+}
+
+function showTyping(body){
+  removeTyping(body);
+  const el = document.createElement('div');
+  el.className = 'typing-indicator';
+  el.innerHTML = '<div class="avatar-sm">🤖</div><div class="typing-bubble"><span></span><span></span><span></span></div>';
+  body.appendChild(el);
+  body.scrollTop = body.scrollHeight;
+}
+
+function removeTyping(body){
+  const t = body.querySelector('.typing-indicator');
+  if(t) t.remove();
+}
+
+function addMessage(body, msg, idx){
+  const row = document.createElement('div');
+  row.className = 'msg-row' + (msg.from==='customer'?' customer':'');
+
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar-sm';
+  avatar.textContent = msg.from==='agent'?'🤖':'👤';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble';
+  bubble.textContent = msg.text;
+
+  const time = document.createElement('div');
+  time.className = 'msg-time';
+  time.textContent = formatTime(idx);
+
+  const wrapper = document.createElement('div');
+  wrapper.appendChild(bubble);
+  wrapper.appendChild(time);
+
+  row.appendChild(avatar);
+  row.appendChild(wrapper);
+
+  body.appendChild(row);
+  body.scrollTop = body.scrollHeight;
+}
+
+function showResults(idx){
+  const rc = document.getElementById('results-card');
+  const metrics = document.getElementById('results-metrics');
+  metrics.innerHTML = '';
+  scenarios[idx].results.forEach(r=>{
+    const m = document.createElement('div');
+    m.className = 'metric';
+    m.textContent = r;
+    metrics.appendChild(m);
+  });
+  rc.classList.add('show');
+}
+
+function replayScenario(){
+  selectScenario(currentScenario);
+}
+
+function setSpeed(s, btn){
+  speed = s;
+  document.querySelectorAll('.speed-toggle button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function toggleAutoplay(){
+  autoplayActive = !autoplayActive;
+  const btn = document.getElementById('btn-autoplay');
+  btn.classList.toggle('active', autoplayActive);
+  if(autoplayActive){
+    selectScenario(0);
+  }
+}
+
+// Init
+selectScenario(0);
+</script>
+</body>
+</html>
